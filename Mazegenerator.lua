@@ -2,6 +2,7 @@
 math.randomseed(os.time())
 math.random(); math.random(); math.random()
 
+
 -- top: 1; down: 2; right: 3; left: 4; backward: 5; foward: 6
 function OpenWall(a_CurrentCell, a_Dir, a_NewCell)
 	a_CurrentCell.m_Walls[a_Dir] = nil
@@ -41,8 +42,7 @@ end
 
 
 
-function Write()
-	-- print(#out)
+function WriteMaze()
 	local file = io.open("laby.txt", "w")
 	
 	for x = 1, #out do
@@ -66,24 +66,32 @@ function Write()
 end
 
 
---- main ---
+--- Main ---
 require "Cell"
 require "Stack"
 
 
---- globals ---
+--- Globals ---
 maze = {}
 out = {}
 stack = cStack.new()
 
--- generate --
+-- Initialization --
+print("--- Initialize maze ---")
 
 allSize = 7
-sizeX = allSize or 5 -- Width
-sizeY = allSize or 1 -- Hight
-sizeZ = allSize or 5 -- Width
+sizeX = allSize or 5
+sizeY = allSize or 1
+sizeZ = allSize or 5
+
+if allSize then
+	print("Size: " .. allSize)
+else
+	print("Size: x = " .. sizeX .. " y = " .. sizeY .. " z = " .. sizeZ)
+end
 
 
+print("Create cells...")
 -- Create cells
 for x = 1, sizeX do
 	maze[x] = {}
@@ -97,6 +105,7 @@ end
 
 
 
+print("Get Neighbors...")
 -- Get Neighbors
 for x = 1, sizeX do
 	for y = 1, sizeY do
@@ -107,30 +116,36 @@ for x = 1, sizeX do
 end
 
 
-maxAmount = sizeX * sizeY * sizeZ
-visitedCells = 1
-local currentCell = maze[1][1][1]
-currentCell.m_Visited = true
+--- Maze algorithm ---
+print("")
+print("--- Generate maze ---")
 
-while true do -- visitedCells < maxAmount do
+-- Algorithm: Growing tree
+
+
+local randCells = {}
+table.insert(randCells, maze[math.random(sizeX)][math.random(sizeY)][math.random(sizeZ)])
+
+while true do
+	currentCell = randCells[#randCells]
+	if (#randCells == 0) then
+		break
+	end
+	
 	local newCell, dir = currentCell:GetRandomNeigbor()
 	if (newCell ~= nil) then
-		stack:Push(currentCell)
+		table.insert(randCells, newCell)
 		OpenWall(currentCell, dir, newCell)
-		currentCell = newCell
 		currentCell.m_Visited = true
-		visitedCells = visitedCells + 1
-	elseif (#stack.m_Stack ~= 0) then
-		 currentCell = stack:Pop()
-	elseif (#stack.m_Stack == 0) then
-		break
+		newCell.m_Visited = true
+	elseif (newCell == nil) then
+		randCells[#randCells] = nil	
 	end
 end
 
 
 
-
--- Create cells
+print("Create output...")
 outX = 1
 outY = 1
 outZ = 1
@@ -149,7 +164,9 @@ for x = 1, sizeX do
 end
 
 
--- Make crossings
+
+print("Generate crossings...")
+-- Generate crossings
 outX = 1
 outY = 1
 outZ = 1
@@ -167,4 +184,6 @@ for x = 1, sizeX do
 	outY = 1
 end
 
-Write()
+
+WriteMaze()
+print("Maze written to file...")
