@@ -33,17 +33,17 @@ end
 function printMaze()
 	local oy = 1
 	local ox = 1
-	for y = 1, sizeY do
-		for x = 1, sizeX do
-			local cell = maze[y][x]
-			if (cell.m_Char ~= nil) then
-				out[oy + 1][ox + 1] = cell.m_Char
-			end
-			ox = ox + 2
-		end
-		oy = oy + 2
-		ox = 1
-	end
+	-- for y = 1, sizeY do
+	-- 	for x = 1, sizeX do
+	-- 		local cell = maze[y][x]
+	-- 		if (cell.m_Char ~= nil) then
+	-- 			out[oy + 1][ox + 1] = cell.m_Char
+	-- 		end
+	-- 		ox = ox + 2
+	-- 	end
+	-- 	oy = oy + 2
+	-- 	ox = 1
+	-- end
 	
 		
 	for y = 1, #out do
@@ -57,6 +57,7 @@ end
 
 
 function Write()
+	print(#out)
 	local file = io.open("laby.txt", "w")
 
 	-- Create ground
@@ -67,7 +68,6 @@ function Write()
 		end
 	end
 	
-	print(#out)
 	for y = 1, #out do
 		for x = 1, #out[y] do
 			if (out[y][x] == " ") then
@@ -146,17 +146,15 @@ for y = 1, sizeY do
 	for x = 1, sizeX do
 		local cell = maze[y][x]
 		cell:Fill(out, oy, ox)
-		ox = ox + 2
+		ox = ox + 4
 	end
-	oy = oy + 2
+	oy = oy + 4
+	
 	ox = 1
 end
 
--- 1/1 1/2
--- 2/1 2/2
--- 3/1 3/2
-
-
+-- printMaze()
+Write()
 
 -- local currentCell = maze[1][1]
 -- currentCell.m_Char = "."
@@ -208,9 +206,4 @@ end
 -- 	
 -- 	if (currentCell.m_X == sizeX) and (currentCell.m_Y == sizeY) then break end
 -- end
-
-
-
-printMaze()
--- Write()
 

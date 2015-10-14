@@ -82,11 +82,11 @@ end
 
 
 function cCell:Fill(a_Out, a_OY, a_OX)
-	for y = 0, 2 do
+	for y = 0, 4 do
 		if (a_Out[a_OY + y] == nil) then
 			a_Out[a_OY + y] = {}
 		end
-		for x = 0, 2 do
+		for x = 0, 4 do
 			a_Out[a_OY + y][a_OX + x] = "#"
 		end
 	end
@@ -95,10 +95,18 @@ function cCell:Fill(a_Out, a_OY, a_OX)
 		return
 	end
 	
-	
-	a_Out[a_OY][a_OX + 1] = self:IsOpen(1) -- 1/2
-	a_Out[a_OY + 1][a_OX] = self:IsOpen(4) -- 2/1
-	a_Out[a_OY + 1][a_OX + 1] = " " -- 2/2
+	a_Out[a_OY][a_OX + 1] = self:IsOpen(1)
+    a_Out[a_OY][a_OX + 2] = self:IsOpen(1)
+    a_Out[a_OY][a_OX + 3] = self:IsOpen(1)
+	a_Out[a_OY + 1][a_OX] = self:IsOpen(4)
+    a_Out[a_OY + 2][a_OX] = self:IsOpen(4)
+    a_Out[a_OY + 3][a_OX] = self:IsOpen(4)
+    
+    for y = 1, 3 do
+        for x = 1, 3 do
+            a_Out[a_OY + y][a_OX + x] = " " 
+        end
+    end
 end
 
 
