@@ -10,7 +10,7 @@ function cCell.new(a_X, a_Y, a_Z)
 	self.m_Visited = false
 	self.m_Walls = {} -- top: 1; down: 2; right: 3; left: 4; backward: 5; foward: 6
 	self.m_Neighbors = {}
-	
+
 	return self
 end
 

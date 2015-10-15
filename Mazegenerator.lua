@@ -72,9 +72,9 @@ function CommandMazeGenerator(a_Split, a_Player)
 		end
 
 		if (#a_Split == 5) then
-			local sizeX = tonumber(a_Split[3])
-			local sizeY = tonumber(a_Split[4])
-			local sizeZ = tonumber(a_Split[5])
+			sizeX = tonumber(a_Split[3])
+			sizeY = tonumber(a_Split[4])
+			sizeZ = tonumber(a_Split[5])
 			if ((sizeX == nil) or (sizeY == nil) or (sizeZ == nil)) then
 				a_Player:SendMessage("Only numbers are allowed.")
 				return true
