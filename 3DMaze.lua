@@ -65,16 +65,27 @@ end
 
 
 function c3DMaze:Generate()
-	-- Algorithm: Growing tree
+	-- Algorithm: Growing tree, modified
 
 	local cells = {}
 	table.insert(cells, self.m_Maze[math.random(self.m_SizeX)][math.random(self.m_SizeY)][math.random(self.m_SizeZ)])
 
+	local index = 0
 	while true do
-		local currentCell = cells[#cells]
 		if (#cells == 0) then
 			-- No more cells left, end reached
 			break
+		end
+
+		local rnd = math.random(100)
+		local currentCell
+		if (rnd <= 80) then
+			currentCell = cells[#cells]
+			index = #cells
+		else
+			rnd = math.random(#cells)
+			index = rnd
+			currentCell = cells[index]
 		end
 
 		local randCell, dir = currentCell:GetRandomNeigbor()
@@ -85,7 +96,7 @@ function c3DMaze:Generate()
 			randCell.m_Visited = true
 		elseif (randCell == nil) then
 			-- No more neighbors left in currentCell, remove currentCell from list
-			cells[#cells] = nil
+			table.remove(cells, index)
 		end
 	end
 end
