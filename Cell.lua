@@ -96,17 +96,17 @@ end
 
 
 
-function cCell:CreateBorders(a_Out, a_OutX, a_OutY, a_OutZ)
+function cCell:CreateBorders(a_Output, a_OutX, a_OutY, a_OutZ)
 	for x = 0, 4 do
-		if (a_Out[a_OutX + x] == nil) then
-			a_Out[a_OutX + x] = {}
+		if (a_Output[a_OutX + x] == nil) then
+			a_Output[a_OutX + x] = {}
 		end
 		for y = 0, 4 do
-			if (a_Out[a_OutX + x][a_OutY + y] == nil) then
-				a_Out[a_OutX + x][a_OutY + y] = {}
+			if (a_Output[a_OutX + x][a_OutY + y] == nil) then
+				a_Output[a_OutX + x][a_OutY + y] = {}
 			end
 			for z = 0, 4 do
-				a_Out[a_OutX + x][a_OutY + y][a_OutZ + z] = 1 -- stone
+				a_Output[a_OutX + x][a_OutY + y][a_OutZ + z] = 1 -- stone
 			end
 		end
 	end
@@ -118,7 +118,7 @@ function cCell:CreateBorders(a_Out, a_OutX, a_OutY, a_OutZ)
 	for x = 1, 3 do
 		for y = 1, 3 do
 			for z = 1, 3 do
-				a_Out[a_OutX + x][a_OutY + y][a_OutZ + z] = 0 -- air
+				a_Output[a_OutX + x][a_OutY + y][a_OutZ + z] = 0 -- air
 			end
 		end
 	end
@@ -126,7 +126,7 @@ end
 
 
 
-function cCell:CreateCrossings(a_Out, a_OutX, a_OutY, a_OutZ)
+function cCell:CreateCrossings(a_Output, a_OutX, a_OutY, a_OutZ)
 	if (not self.m_Visited) then
 		return
 	end
@@ -138,7 +138,7 @@ function cCell:CreateCrossings(a_Out, a_OutX, a_OutY, a_OutZ)
 	if isOpen then
 		for x = 1, 3 do
 			for z = 1, 3 do
-				a_Out[a_OutX + x][a_OutY + 4][a_OutZ + z] = 0
+				a_Output[a_OutX + x][a_OutY + 4][a_OutZ + z] = 0
 			end
 		end
 	end
@@ -148,7 +148,7 @@ function cCell:CreateCrossings(a_Out, a_OutX, a_OutY, a_OutZ)
 	if isOpen then
 		for x = 1, 3 do
 			for y = 1, 3 do
-				a_Out[a_OutX + x][a_OutY + y][a_OutZ + 4] = 0
+				a_Output[a_OutX + x][a_OutY + y][a_OutZ + 4] = 0
 			end
 		end
 	end
@@ -158,7 +158,7 @@ function cCell:CreateCrossings(a_Out, a_OutX, a_OutY, a_OutZ)
 	if isOpen then
 		for z = 1, 3 do
 			for y = 1, 3 do
-				a_Out[a_OutX + 4][a_OutY + y][a_OutZ + z] = 0
+				a_Output[a_OutX + 4][a_OutY + y][a_OutZ + z] = 0
 			end
 		end
 	end
@@ -171,5 +171,39 @@ function cCell:IsOpen(a_ToCheck)
 		return true
 	else
 		return false
+	end
+end
+
+
+
+function cCell:CreateLadder(a_Output, a_OutX, a_OutY, a_OutZ)
+	if (self.m_Neighbors[1] == nil or self.m_Walls[1] ~= nil) then
+		return
+	end
+
+	-- Create stone
+	for y = 1, 4 do
+		a_Output[a_OutX + 2][a_OutY + y][a_OutZ + 2] = 1
+	end
+
+	-- Create ladders
+	for z = 1, 3, 2 do
+		for y = 1, 4 do
+			if (z == 1) then
+				a_Output[a_OutX + 2][a_OutY + y][a_OutZ + z] = { 65, 2 }
+			else
+				a_Output[a_OutX + 2][a_OutY + y][a_OutZ + z] = { 65, 3 }
+			end
+		end
+	end
+
+	for x = 1, 3, 2 do
+		for y = 1, 4 do
+			if (x == 1) then
+				a_Output[a_OutX + x][a_OutY + y][a_OutZ + 2] = { 65, 4 }
+			else
+				a_Output[a_OutX + x][a_OutY + y][a_OutZ + 2] = { 65, 5 }
+			end
+		end
 	end
 end
