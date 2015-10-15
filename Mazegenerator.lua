@@ -1,189 +1,116 @@
+PLUGIN = nil
+MAZES = {}
+
 -- bad, bad random generator
 math.randomseed(os.time())
 math.random(); math.random(); math.random()
 
+function Initialize(a_Plugin)
+	a_Plugin:SetName("MazeGenerator")
+	a_Plugin:SetVersion(1)
 
--- top: 1; down: 2; right: 3; left: 4; backward: 5; foward: 6
-function OpenWall(a_CurrentCell, a_Dir, a_NewCell)
-	a_CurrentCell.m_Walls[a_Dir] = nil
-	
-	if (a_Dir == 1) then
-		a_NewCell.m_Walls[2] = nil
-	elseif (a_Dir == 2) then
-		a_NewCell.m_Walls[1] = nil
-	elseif (a_Dir == 3) then
-		a_NewCell.m_Walls[4] = nil
-	elseif (a_Dir == 4) then
-		a_NewCell.m_Walls[3] = nil
-	elseif (a_Dir == 5) then
-		a_NewCell.m_Walls[6] = nil
-	elseif (a_Dir == 6) then
-		a_NewCell.m_Walls[5] = nil
-	end
+	PLUGIN = a_Plugin
+
+	-- Hooks
+	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_DESTROYED, OnPlayerDestroyed)
+
+	-- Command Bindings
+	cPluginManager.BindCommand("/maze", "mazegenerator.command", CommandMazeGenerator , " - access to the maze commands")
+
+	LOG("Initialised " .. a_Plugin:GetName() .. " v." .. a_Plugin:GetVersion())
+	return true
 end
 
 
 
-function GetInvDir(a_Dir)
-	if (a_Dir == 1) then
-		return 2
-	elseif (a_Dir == 2) then
-		return 1
-	elseif (a_Dir == 3) then
-		return 4
-	elseif (a_Dir == 4) then
-		return 3
-	elseif (a_Dir == 5) then
-		return 6
-	elseif (a_Dir == 6) then
-		return 5
-	end
+function OnDisable()
+	LOG(PLUGIN:GetName() .. " is shutting down...")
 end
 
 
 
-function WriteMaze()
-	local file = io.open("laby.txt", "w")
-	
-	for x = 1, #out do
-		for y = 1, #out[x] do
-			for z = 1, #out[x][y] do
-				if (out[x][y][z] == " ") then
-					local str = (x - 1) .. ":" .. (y - 1) .. ":" .. (z - 1) .. ":0"
-					file:write(str .. "\n")
-				elseif (out[x][y][z] == "#") then
-					local str = (x - 1) .. ":" .. (y - 1) .. ":" .. (z - 1) .. ":1"
-					file:write(str .. "\n")
-				else
-					local str = (x - 1) .. ":" .. (y - 1) .. ":" .. (z - 1) .. ":" .. out[x][y][z]
-					file:write(str .. "\n")
-				end
+function OnPlayerDestroyed(a_Player)
+	MAZES[a_Player:GetName()] = nil
+	collectgarbage()
+end
+
+
+
+function CommandMazeGenerator(a_Split, a_Player)
+	-- Check param
+	if ((#a_Split == 1)) then
+		a_Player:SendMessage("/maze gen [<sizeAll> <sizeX sizeY sizeZ>] - Generate a maze")
+		a_Player:SendMessage("/maze pos - Set a paste location, using your location")
+		a_Player:SendMessage("/maze paste - Pastes the maze at the location")
+		return true
+	end
+
+	if (a_Split[2] == "gen") then
+		if ((#a_Split ~= 3) and (#a_Split ~= 5)) then
+			a_Player:SendMessage("/maze gen [<sizeAll> <sizeX sizeY sizeZ>]")
+			return true
+		end
+
+		local sizeX, sizeY, sizeZ
+
+		if (#a_Split == 3) then
+			local sizeAll = tonumber(a_Split[3])
+			if (sizeAll == nil) then
+				a_Player:SendMessage("sizeAll is not a number")
+				return true
+			end
+			sizeX = sizeAll
+			sizeY = sizeAll
+			sizeZ = sizeAll
+		end
+
+		if (#a_Split == 5) then
+			local sizeX = tonumber(a_Split[3])
+			local sizeY = tonumber(a_Split[4])
+			local sizeZ = tonumber(a_Split[5])
+			if ((sizeX == nil) or (sizeY == nil) or (sizeZ == nil)) then
+				a_Player:SendMessage("Only numbers are allowed.")
+				return true
 			end
 		end
+
+		local maze = c3DMaze.new(sizeX, sizeY, sizeZ)
+		MAZES[a_Player:GetName()] = maze
+
+		a_Player:SendMessage("Maze generated.")
+		return true
 	end
 
-	file:close()
-end
 
-
---- Main ---
-require "Cell"
-require "Stack"
-
-
---- Globals ---
-maze = {}
-out = {}
-stack = cStack.new()
-
--- Initialization --
-print("--- Initialize maze ---")
-
-allSize = 7
-sizeX = allSize or 5
-sizeY = allSize or 1
-sizeZ = allSize or 5
-
-if allSize then
-	print("Size: " .. allSize)
-else
-	print("Size: x = " .. sizeX .. " y = " .. sizeY .. " z = " .. sizeZ)
-end
-
-
-print("Create cells...")
--- Create cells
-for x = 1, sizeX do
-	maze[x] = {}
-	for y = 1, sizeY do
-		maze[x][y] = {}
-		for z = 1, sizeZ do
-			maze[x][y][z] = cCell.new(x, y, z)
+	if (a_Split[2] == "pos") then
+		local maze = MAZES[a_Player:GetName()]
+		if (maze == nil) then
+			a_Player:SendMessage("You have no maze generated.")
+			return true
 		end
+
+		maze:SetPos(a_Player:GetPosX(), a_Player:GetPosY(), a_Player:GetPosZ())
+		a_Player:SendMessage("Position has been set.")
+		return true
 	end
-end
 
 
-
-print("Get Neighbors...")
--- Get Neighbors
-for x = 1, sizeX do
-	for y = 1, sizeY do
-		for z = 1, sizeZ do
-			maze[x][y][z]:SetNeighbors()
+	if (a_Split[2] == "place") then
+		local maze = MAZES[a_Player:GetName()]
+		if (maze == nil) then
+			a_Player:SendMessage("You have no maze generated.")
+			return true
 		end
-	end
-end
 
-
---- Maze algorithm ---
-print("")
-print("--- Generate maze ---")
-
--- Algorithm: Growing tree
-
-
-local randCells = {}
-table.insert(randCells, maze[math.random(sizeX)][math.random(sizeY)][math.random(sizeZ)])
-
-while true do
-	currentCell = randCells[#randCells]
-	if (#randCells == 0) then
-		break
-	end
-	
-	local newCell, dir = currentCell:GetRandomNeigbor()
-	if (newCell ~= nil) then
-		table.insert(randCells, newCell)
-		OpenWall(currentCell, dir, newCell)
-		currentCell.m_Visited = true
-		newCell.m_Visited = true
-	elseif (newCell == nil) then
-		randCells[#randCells] = nil	
-	end
-end
-
-
-
-print("Create output...")
-outX = 1
-outY = 1
-outZ = 1
-for x = 1, sizeX do
-	for y = 1, sizeY do
-		for z = 1, sizeZ do
-			local cell = maze[x][y][z]
-			cell:CreateCells(out, outX, outY, outZ)
-			outZ = outZ + 4
+		if (maze.m_PosX == nil) then
+			a_Player:SendMessage("No place position has been set. Use /maze pos first.")
+			return true
 		end
-		outY = outY + 4
-		outZ = 1
+
+		maze:Place(a_Player:GetWorld())
+		a_Player:SendMessage("Maze has been placed.")
+		return true
 	end
-	outX = outX + 4
-	outY = 1
+
+	return true
 end
-
-
-
-print("Generate crossings...")
--- Generate crossings
-outX = 1
-outY = 1
-outZ = 1
-for x = 1, sizeX do
-	for y = 1, sizeY do
-		for z = 1, sizeZ do
-			local cell = maze[x][y][z]
-			cell:CreateCrossings(out, outX, outY, outZ)
-			outZ = outZ + 4
-		end
-		outY = outY + 4
-		outZ = 1
-	end
-	outX = outX + 4
-	outY = 1
-end
-
-
-WriteMaze()
-print("Maze written to file...")
