@@ -30,8 +30,9 @@ end
 
 
 function OnPlayerDestroyed(a_Player)
+	-- Remove maze
 	MAZES[a_Player:GetName()] = nil
-	collectgarbage()
+	-- collectgarbage()
 end
 
 
@@ -46,6 +47,12 @@ function CommandMazeGenerator(a_Split, a_Player)
 	end
 
 	if (a_Split[2] == "gen") then
+		-- Remove maze
+		if (MAZES[a_Player:GetName()] ~= nil) then
+			MAZES[a_Player:GetName()] = nil
+			-- collectgarbage()
+		end
+
 		if ((#a_Split ~= 3) and (#a_Split ~= 5)) then
 			a_Player:SendMessage("/maze gen [<sizeAll> <sizeX sizeY sizeZ>]")
 			return true
@@ -95,7 +102,7 @@ function CommandMazeGenerator(a_Split, a_Player)
 	end
 
 
-	if (a_Split[2] == "place") then
+	if (a_Split[2] == "paste") then
 		local maze = MAZES[a_Player:GetName()]
 		if (maze == nil) then
 			a_Player:SendMessage("You have no maze generated.")
@@ -107,7 +114,7 @@ function CommandMazeGenerator(a_Split, a_Player)
 			return true
 		end
 
-		maze:Place(a_Player:GetWorld())
+		maze:Paste(a_Player:GetWorld())
 		a_Player:SendMessage("Maze has been placed.")
 		return true
 	end

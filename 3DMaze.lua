@@ -142,7 +142,7 @@ end
 
 
 
-function c3DMaze:Place(a_World)
+function c3DMaze:Paste(a_World)
 	local area = cBlockArea()
 	area:Create(#self.m_Output, #self.m_Output[1], #self.m_Output[1][1])
 
