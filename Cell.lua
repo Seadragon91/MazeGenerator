@@ -207,3 +207,56 @@ function cCell:CreateLadder(a_Output, a_OutX, a_OutY, a_OutZ)
 		end
 	end
 end
+
+
+
+function cCell:CreateChest(a_Chests, a_OutX, a_OutY, a_OutZ)
+	if
+	(
+		(self.m_Neighbors[1] ~= nil) and (self.m_Walls[1] == nil) or
+		(self.m_Neighbors[2] ~= nil) and (self.m_Walls[2] == nil)
+	) then
+		return
+	end
+
+	if (math.random(100) <= 70) then
+		return
+	end
+
+	local items = cItems()
+	for x = 1, 10 do
+		local item = CHESTCONTENT[math.random(#CHESTCONTENT)]
+		items:Add(cItem(item))
+		if (item == E_ITEM_BOW) then
+			items:Add(cItem(E_ITEM_ARROW, 16))
+		end
+
+		if (math.random() > 0.3) then
+			break
+		end
+	end
+
+	items:Add(cItem(E_ITEM_BAKED_POTATO, 6))
+	items:Add(cItem(E_BLOCK_TORCH, 9))
+
+	table.insert(a_Chests, { a_OutX + 2,  a_OutY + 1, a_OutZ + 2, math.random(2, 5), items })
+end
+
+
+
+function cCell:CreateMobSpawner(a_MobSpawners, a_OutX, a_OutY, a_OutZ)
+	if
+	(
+		(self.m_Neighbors[1] ~= nil) and (self.m_Walls[1] == nil) or
+		(self.m_Neighbors[2] ~= nil) and (self.m_Walls[2] == nil)
+	) then
+		return
+	end
+
+	if (math.random(100) <= 70) then
+		return
+	end
+
+	local mobTypes = { 50, 51, 52, 54, 59 }
+	table.insert(a_MobSpawners, { a_OutX + 2,  a_OutY + 1, a_OutZ + 2, mobTypes[math.random(#mobTypes)] })
+end

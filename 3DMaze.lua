@@ -9,6 +9,8 @@ function c3DMaze.new(a_SizeX, a_SizeY, a_SizeZ)
 	self.m_SizeZ = a_SizeZ
 	self.m_Maze = {}
 	self.m_Output = {}
+	self.m_Chests = {}
+	self.m_MobSpawner = {}
 
 	self:CreateCells()
 	self:SetNeighbors()
@@ -16,6 +18,7 @@ function c3DMaze.new(a_SizeX, a_SizeY, a_SizeZ)
 	self:CreateOutput()
 	self:CreateCrossings()
 	self:CreateLadders()
+	self:CreateSpecificBlocks()
 
 	return self
 end
@@ -78,14 +81,12 @@ function c3DMaze:Generate()
 			break
 		end
 
-		local rnd = math.random(100)
 		local currentCell
-		if (rnd <= 80) then
+		if (math.random(100) <= 80) then
 			currentCell = cells[#cells]
 			index = #cells
 		else
-			rnd = math.random(#cells)
-			index = rnd
+			index = math.random(#cells)
 			currentCell = cells[index]
 		end
 
@@ -93,9 +94,7 @@ function c3DMaze:Generate()
 		if (randCell ~= nil) then
 			table.insert(cells, randCell)
 			self:OpenWall(currentCell, dir, randCell)
-			currentCell.m_Visited = true
-			randCell.m_Visited = true
-		elseif (randCell == nil) then
+		else
 			-- No more neighbors left in currentCell, remove currentCell from list
 			table.remove(cells, index)
 		end
@@ -166,6 +165,29 @@ function c3DMaze:CreateLadders()
 end
 
 
+function c3DMaze:CreateSpecificBlocks()
+	local outX = 1
+	local outY = 1
+	local outZ = 1
+	for x = 1, self.m_SizeX do
+		for y = 1, self.m_SizeY do
+			for z = 1, self.m_SizeZ do
+				if (math.random(1, 2) == 1) then
+					self.m_Maze[x][y][z]:CreateChest(self.m_Chests, outX, outY, outZ)
+				else
+					self.m_Maze[x][y][z]:CreateMobSpawner(self.m_MobSpawner, outX, outY, outZ)
+				end
+				outZ = outZ + 4
+			end
+			outY = outY + 4
+			outZ = 1
+		end
+		outX = outX + 4
+		outY = 1
+	end
+end
+
+
 
 function c3DMaze:SetPos(a_PosX, a_PosY, a_PosZ)
 	self.m_PosX = a_PosX
@@ -194,6 +216,26 @@ function c3DMaze:Paste(a_World)
 	end
 
 	area:Write(a_World, self.m_PosX, self.m_PosY, self.m_PosZ)
+
+	-- Place specific blocks
+	for _, spawner in pairs(self.m_MobSpawner) do
+		local x, y, z = spawner[1] + self.m_PosX - 1, spawner[2] + self.m_PosY - 1, spawner[3] + self.m_PosZ - 1
+		a_World:SetBlock(x, y, z, E_BLOCK_MOB_SPAWNER, 0)
+		a_World:DoWithBlockEntityAt(x, y, z,
+			function(a_MobSpawner)
+				local mobSpawner = tolua.cast(a_MobSpawner, "cMobSpawnerEntity")
+				mobSpawner:SetEntity(spawner[4])
+			end)
+	end
+
+	for _, chest in pairs(self.m_Chests) do
+		local x, y, z = chest[1] + self.m_PosX - 1, chest[2] + self.m_PosY - 1, chest[3] + self.m_PosZ - 1
+		a_World:SetBlock(x, y, z, E_BLOCK_CHEST, chest[4])
+		a_World:DoWithChestAt(x, y, z,
+			function(a_Chest)
+				a_Chest:GetContents():AddItems(chest[5])
+			end)
+	end
 end
 
 
@@ -201,6 +243,9 @@ end
 -- top: 1; down: 2; right: 3; left: 4; backward: 5; foward: 6
 function c3DMaze:OpenWall(a_CurrentCell, a_Dir, a_NewCell)
 	a_CurrentCell.m_Walls[a_Dir] = nil
+
+	a_CurrentCell.m_Visited = true
+	a_NewCell.m_Visited = true
 
 	if (a_Dir == 1) then
 		a_NewCell.m_Walls[2] = nil
