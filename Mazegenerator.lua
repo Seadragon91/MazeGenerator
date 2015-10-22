@@ -13,6 +13,7 @@ function Initialize(a_Plugin)
 
 	-- Hooks
 	cPluginManager:AddHook(cPluginManager.HOOK_PLAYER_DESTROYED, OnPlayerDestroyed)
+	cPluginManager:AddHook(cPluginManager.HOOK_EXPLODING, OnExploding)
 
 	-- Command Bindings
 	cPluginManager.BindCommand("/maze", "mazegenerator.command", CommandMazeGenerator , " - access to the maze commands")
@@ -33,6 +34,11 @@ function OnPlayerDestroyed(a_Player)
 	-- Remove maze
 	MAZES[a_Player:GetName()] = nil
 	-- collectgarbage()
+end
+
+
+function OnExploding(World, ExplosionSize, CanCauseFire, X, Y, Z, Source, SourceData)
+	return true
 end
 
 
