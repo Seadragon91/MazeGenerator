@@ -146,6 +146,10 @@ end
 
 
 function c3DMaze:CreateLadders()
+	if (self.m_SizeY == 1) then
+		return
+	end
+
 	local outX = 1
 	local outY = 1
 	local outZ = 1
