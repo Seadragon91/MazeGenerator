@@ -257,6 +257,6 @@ function cCell:CreateMobSpawner(a_MobSpawners, a_OutX, a_OutY, a_OutZ)
 		return
 	end
 
-	local mobTypes = { 50, 51, 52, 54, 59 }
+	local mobTypes = { mtSkeleton, mtSpider, mtZombie, mtCaveSpider }
 	table.insert(a_MobSpawners, { a_OutX + 2,  a_OutY + 1, a_OutZ + 2, mobTypes[math.random(#mobTypes)] })
 end
