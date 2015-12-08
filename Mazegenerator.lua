@@ -101,10 +101,18 @@ function CommandMazeGenerator(a_Split, a_Player)
 			end
 		end
 
+		-- Check for a max volume
+		local amountBlocks = (sizeX * 4 + 1) * (sizeY * 4 + 1) * (sizeZ * 4 + 1)
+		if (amountBlocks > 226981) then
+			a_Player:SendMessage("The maze to paste, would be over " .. amountBlocks .. " blocks big.")
+			a_Player:SendMessage("It exceeds a safe limit of 226981 blocks. Please use smaller numbers, to avoid server freeze.")
+			return true
+		end
+
 		local maze = c3DMaze.new(sizeX, sizeY, sizeZ)
 		MAZES[a_Player:GetName()] = maze
 
-		a_Player:SendMessage("Maze generated.")
+		a_Player:SendMessage("Maze generated. The amount of blocks to be placed are " .. amountBlocks .. ". Next command /maze pos.")
 		return true
 	end
 
@@ -117,7 +125,7 @@ function CommandMazeGenerator(a_Split, a_Player)
 		end
 
 		maze:SetPos(a_Player:GetPosX(), a_Player:GetPosY(), a_Player:GetPosZ())
-		a_Player:SendMessage("Position has been set.")
+		a_Player:SendMessage("Position has been set. Next command /maze paste.")
 		return true
 	end
 
