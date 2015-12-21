@@ -55,9 +55,18 @@ end
 function cCell:GetRandomNeigbor()
 	local left = {}
 
-	for x = 1, 6 do
-		if ((self.m_Neighbors[x] ~= nil) and (not self.m_Neighbors[x].m_Visited) and (self.m_Walls[x] ~= nil)) then
+	-- First use all the neighbors on the same y level, makes better mazes :-)
+	for x = 3, 6 do
+		if ((self.m_Neighbors[x] ~= nil) and (self.m_Walls[x] ~= nil)) then
 			table.insert(left, x)
+		end
+	end
+
+	if (#left == 0) then
+		for x = 1, 6 do
+			if ((self.m_Neighbors[x] ~= nil) and (self.m_Walls[x] ~= nil)) then
+				table.insert(left, x)
+			end
 		end
 	end
 
